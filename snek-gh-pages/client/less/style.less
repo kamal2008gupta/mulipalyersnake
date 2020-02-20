@@ -1,0 +1,760 @@
+body, html {
+  font-family: "Lato", "Helvetica Neue", sans-serif;
+  padding: 0;
+  font-weight: 700;
+  margin: 0;
+  background: black;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom:0;
+  perspective: 1200px;
+}
+
+* {
+  font-family: inherit;
+}
+
+.board-wrapper {
+  transform: rotateX(20deg);
+  position: relative;
+  margin-top: -5%;
+  transform-style: preserve-3d;
+}
+
+.board {
+  position: relative;
+  background: #1a1a1a;
+  background: #111;
+  margin: 0 auto;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+}
+
+.grid-overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  z-index: 3;
+  background-image: repeating-linear-gradient(90deg, //↘
+        #333, #333 1px, //5px
+        rgba(0,0,0,0) 1px , rgba(0,0,0,0) 18px, //100px
+        #333 18px, #333 20px, //5px
+     ),
+     repeating-linear-gradient(180deg, //↘
+        #333, #333 1px, //5px
+        rgba(0,0,0,0) 1px, rgba(0,0,0,0) 18px, //100px
+        #333 18px, #333 20px, //5px
+     );
+}
+
+.border {
+  content: " ";
+  position: absolute;
+  opacity: .4;
+  border: solid 20px #BBB;
+  transition: border-color .15s ease-in;
+  border-radius: 4px;
+  width: 100%;
+  height: 100%;
+  top: -20px;
+  left: -20px;
+}
+
+.snek {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  transform-style: preserve-3d;
+
+  &.winner .body {
+    transform: rotate(45deg);
+  }
+
+  &.player-indicator .body {
+    animation: .2s ease-out playerIndicator infinite;
+  }
+
+  &.charged .body {
+    &:after {
+      background: white;
+      opacity: .6;
+      position: absolute;
+      content: "";
+      left: 0;
+      width: 100%;
+      height: 100%;
+      top: 0;
+    }
+  }
+
+  .body {
+    position: absolute;
+    width: ~"calc(100% - 2px)";
+    height: ~"calc(100% - 2px)";
+    top: 1px;
+    left: 1px;
+  }
+}
+
+@keyframes flicker {
+  0% { opacity: 1;}
+  50% { opacity: .8;}
+  100% { opacity: 1;}
+}
+
+@keyframes playerIndicator {
+  0% {
+    outline: 10px solid rgba(255,255,255,.12);
+  }
+  50% {
+    outline: 16px solid rgba(255,255,255,.12);
+  }
+  100% {
+    outline: 10px solid rgba(255,255,255,.12);
+  }
+
+}
+
+@keyframes flicker {
+  0% { opacity: 1;}
+  50% { opacity: .8;}
+  100% { opacity: 1;}
+}
+
+.gone .body {
+  animation: blam .1s ease-out;
+  // background: white !important;
+}
+
+@keyframes blam {
+  0% {
+    background: white;
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(.8);
+  }
+}
+
+.apple {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 4;
+
+  .body {
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    width: ~"calc(100% - 2px)";
+    height: ~"calc(100% - 2px)";
+
+    background: white;
+    border-radius: 50%;
+
+    animation: pop .3s, pulse .5s infinite;
+    animation-delay: 0s, .3s;
+
+    &:after {
+      content: "";
+      width: 35%;
+      height: 35%;
+      top: 17%;
+      left: 17%;
+      position: absolute;
+      border-radius: 50%;
+      // opacity: .4;
+      background: white;
+
+    }
+  }
+}
+
+.bomb {
+  .apple;
+
+  .body {
+
+    border-radius: 0;
+    animation: bombPulse .1s infinite;
+
+    &:after {
+      border-radius: 0;
+      border: solid 2px rgba(255,255,255,.2);
+      box-sizing: border-box;
+      background: transparent;
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      top: -40px;
+      left: -40px;
+    }
+  }
+}
+
+@keyframes bombPulse {
+  0% {
+    opacity: 1;
+    }
+  100% {
+    opacity: .4;
+  }
+}
+
+
+@keyframes pop {
+  0% {
+    transform: scale(.6);
+  }
+  60% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.crash {
+  animation: crash .7s ease-out;
+}
+
+@keyframes crash {
+  0% {
+    border-color: #444;
+  }
+  100% {
+    border-color: #222;
+  }
+}
+
+@keyframes strobe {
+  0% {
+    opacity: 1
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.tick {
+  height: 40px;
+  width: 40px;
+  margin: 10px;
+  display: inline-block;
+  border-radius: 50%;
+
+  &.strobe {
+    animation: strobe .4s ease-out;
+    animation-fill-mode: forwards;
+  }
+
+  &.server-tick {
+    background: blue;
+    margin-left: 0;
+  }
+
+  &.local-tick {
+    background: green;
+  }
+}
+
+.delta {
+  display: inline-block;
+  color: #999;
+}
+
+.boom {
+  position: absolute;
+  z-index: 99999999;
+  opacity: 1;
+  transform-style: preserve-3d;
+
+  .body {
+    animation: boom .5s ease-out;
+    animation-fill-mode: forward;
+    width: 100%;
+    height: 100%;
+    background: #ffb806;
+    opacity: 0;
+  }
+
+  .shock {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    animation: shock .5s ease-out;
+    animation-fill-mode: forward;
+    // border: solid 5px white;
+    background: white;
+    box-sizing: border-box;
+    opacity: 0;
+  }
+
+}
+
+@keyframes boom {
+  0% {
+    transform: scale(.95) translateZ(0);
+    opacity: 1;
+    background: white;
+  }
+  30% {
+    background: #ffb806;
+  }
+  40% {
+    transform: scale(1) translateZ(4px);
+    opacity: 1;
+    background: #ffb806;
+    animation-timing-function: ease-in;
+  }
+  80% {
+    background: #727272;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(.75) translateZ(20px);
+  }
+}
+
+@keyframes shock {
+  0% {
+    transform: scale(.95);
+    opacity: .4;
+    background: white;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.5);
+  }
+}
+
+.beam {
+  position: absolute;
+  z-index: 1;
+  opacity: .5;
+
+  .body {
+    width: 100%;
+    height: 100%;
+    animation: fadeOut .2s ease-out;
+    opacity: 0;
+  }
+
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  30% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+
+.chat-ui {
+  display: none;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding-bottom: 20px;
+  width: 100%;
+  text-align: center;
+
+  input {
+    outline: none;
+    background: transparent;
+    color: rgba(255,255,255,.6);
+    border: none;
+    font-size: 26px;
+    width: 400px;
+    padding: 0 0 8px 0px;
+    border-bottom: solid 2px rgba(255,255,255,.2);
+
+    &::-webkit-input-placeholder {
+      color: rgba(255,255,255,.25);
+    }
+    &::-moz-input-placeholder {
+      color: rgba(255,255,255,.25);
+    }
+  }
+}
+
+.message {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  z-index: 3;
+  transform-style: preserve-3d;
+
+  .body {
+    color: white;
+    white-space: nowrap;
+    z-index: 3;
+    padding: 5px 0;
+    position: absolute;
+    font-size: 18px;
+    opacity: .9;
+    top: 0;
+    left: -130px;
+    text-align: center;
+    width: 260px;
+    transform: translateY(-25px) translateX(10px) translateZ(20px) rotateX(-45deg);
+    animation: messagePop 2.25s ease-out;
+    animation-fill-mode: forwards;
+    text-transform: uppercase;
+  }
+}
+
+@keyframes messagePop {
+  0% {
+    transform: translateY(-25px) translateX(10px) translateZ(10px) rotateX(-45deg);
+    opacity: 0;
+  }
+  20% {
+    transform: translateY(-25px) translateX(10px) translateZ(30px) rotateX(-45deg);
+    opacity: 1;
+  }
+  90% {
+    transform: translateY(-25px) translateX(10px) translateZ(30px) rotateX(-45deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-25px) translateX(10px) translateZ(65px) rotateX(-45deg);
+    opacity: 0;
+  }
+}
+
+
+// Leader indicator at the top of the screen
+
+.leader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  padding-top: 25px;
+  color: rgba(255,255,255,.4);
+
+  .leader-name {
+    text-transform: uppercase;
+    display: inline-block;
+    color: rgba(255,255,255,.8);
+  }
+
+  .leader-boxes {
+    display: inline-block;
+  }
+
+  .label {
+    position: relative;
+    top: -3px;
+    padding: 0 7px;
+    display: inline-block;
+  }
+
+  .name-label {
+    width: 300px;
+    text-align: right;
+  }
+
+  .win-label {
+    width: 200px;
+    text-align: left;
+  }
+
+  .box {
+    width: 16px;
+    height: 16px;
+    margin: 1px;
+    display: inline-block;
+    background: #222;
+  }
+}
+
+
+// modes
+
+[mode] {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform-origin: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  animation: modeChange .5s ease-out;
+  transform-style: preserve-3d;
+  perspective: 1200px;
+
+  &.hidden {
+    display: none;
+  }
+}
+
+@keyframes modeChange {
+  0% {
+    opacity: 0;
+    transform: scale(.95);
+
+  }
+  50% {
+    transform: scale(1.02);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+
+// Scoreboard between rounds
+
+[mode='winner'] {
+  color: white;
+  font-weight: bold;
+
+  .scoreboard {
+    width: 400px;
+    position: relative;
+    top: -20px;
+
+    .snake-square {
+      display: inline-block;
+      margin-right: 10px;
+      width: 20px;
+      height: 20px;
+      position:relative;
+      top: 1px;
+    }
+
+    h1 {
+      font-size: 30px;
+      text-align: center;
+      font-weight: 900;
+      margin-top:0;
+      color: white;
+      text-transform: uppercase;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+
+      li {
+        border-bottom: solid 2px rgba(255,255,255,.2);
+        color: rgba(255,255,255,.8);
+        padding: 10px 0;
+        font-size: 24px;
+
+        .name {
+          text-transform: uppercase;
+        }
+
+        .points {
+          float: right;
+        }
+
+        &:last-child {
+          border: none;
+        }
+      }
+    }
+  }
+}
+
+
+// Winner screen when we show just the winning snake
+
+.winning-snake {
+  position: absolute;
+  text-transform: uppercase;
+  top: 60px;
+  width: 100%;
+  font-size: 40px;
+  text-align: center;
+  font-weight: 900;
+  margin-top:0;
+  color: white;
+  z-index: 88;
+  opacity: 0;
+  transition: opacity .2s ease-out;
+}
+
+.winner {
+
+  .keys-helper {
+    opacity: 0;
+    transition: all .2s ease-out;
+  }
+
+  .grid-overlay {
+    display: none;
+  }
+
+  .apple {
+    opacity: 0;
+    transition: all .2s ease-out;
+  }
+
+  .border {
+    border-color: transparent;
+    transition: all .2s ease-out;
+  }
+
+  .board {
+    transition: all .2s ease-out;
+    background: transparent;
+  }
+
+  .leader {
+    transition: all .2s ease-out;
+    opacity: 0;
+  }
+}
+
+// Little indicator when a player spawn
+
+.spawn {
+  position: absolute;
+  z-index: 4;
+  opacity: 1;
+  transform-style: preserve-3d;
+
+  .body {
+    animation: spawnShock 1s ease-out;
+    animation-fill-mode: forward;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    border: solid 2px white;
+    box-sizing: border-box;
+  }
+}
+
+@keyframes spawnShock {
+  0% {
+    transform: scale(1.2);
+    opacity: .5;
+  }
+  99% {
+    opacity: 0;
+    border-width: 1px;
+    transform: scale(5);
+  }
+}
+
+// Instructions at the bottom of the page
+.keys-helper {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  color: rgba(255,255,255,.3);
+  padding: 0 0 30px 0;
+
+  .single-key {
+    background: rgba(255,255,255,.3);
+    border-bottom: solid 3px rgba(0,0,0,.3);
+    color: black;
+    display: inline-block;
+    padding: 1px 0 1px 0;
+    text-align: center;
+    width: 26px;
+    border-radius: 2px;
+    &.enter-key {
+      width: auto;
+      padding: 1px 6px;
+    }
+    &:last-of-type {
+      margin-right: 3px;
+    }
+  }
+
+  .command {
+    display: inline-block;
+    margin: 0 10px;
+    height: 25px;
+    line-height: 25px;
+  }
+}
+
+// Square puffs emanating from explosions
+.puff {
+  background: rgba(255,255,255,.4);
+  background: #555;
+  z-index: 5;
+}
+
+// Bomb blast-line
+.blast-line {
+  transform-origin: top;
+  z-index: 4;
+}
+
+
+// Blank particle, hangs out and waits
+// to be used by particles.js
+.blank-particle {
+  position: absolute;
+  display: none;
+  top: 0:
+  left: 0;
+  height: 15px;
+  width: 15px;
+}
+
+.underblast {
+  z-index: 2;
+  position: absolute;
+  border-radius: 50%;
+}
+
+.speed {
+  z-index: 4;
+  transform-origin: bottom left;
+}
+
+.warpskid {
+  z-index: 5;
+}
+
+.brick {
+  z-index: 4;
+}
+
+.overlay {
+  z-index: 4;
+}
